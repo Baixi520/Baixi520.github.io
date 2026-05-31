@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>悬停1.5倍按住2.5倍3D卡牌</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f1115;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: sans-serif;
+            user-select: none;
+        }
+
+        .card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            perspective: 1000px;
+        }
+
+        .card {
+            width: 238px;
+            height: 333px;
+            border-radius: 14px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            cursor: pointer;
+            
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            z-index: 1; 
+            
+            transition: transform 0.15s ease-out, z-index 0.2s, box-shadow 0.2s;
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+
+        .card:nth-child(1) { background-image: url('images/PTCG.png'); }    </style>
+</head>
+<body>
+
+    <div class="card-container">
+        <div class="card"></div>
+    </div>
+
+    <script>
+        const cards = document.querySelectorAll('.card');
+        let activeCard = null; // 当前被按住拖动的卡牌
+
+        // 全局监听鼠标移动
+        window.addEventListener('mousemove', (e) => {
+            // 1. 如果正在按住拖动某张卡牌，只更新这张卡牌的状态
+            if (activeCard) {
+                updateCardTransform(activeCard, e);
+                return;
+            }
+
+            // 2. 如果没有按住任何卡牌，正常处理所有卡牌的悬停旋转效果
+            cards.forEach(card => {
+                if (card.matches(':hover')) {
+                    updateCardTransform(card, e);
+                } else {
+                    resetCard(card);
+                }
+            });
+        });
+
+        // 全局监听鼠标松开
+        window.addEventListener('mouseup', () => {
+            if (activeCard) {
+                // 松开后，如果鼠标依然在卡牌上，保持1.5倍放大旋转；如果不在，则回正
+                if (!activeCard.matches(':hover')) {
+                    resetCard(activeCard);
+                }
+                activeCard = null;
+            }
+        });
+
+        // 给每张卡牌绑定按下事件
+        cards.forEach(card => {
+            card.addEventListener('mousedown', (e) => {
+                activeCard = card; // 锁定当前按住的卡牌
+                updateCardTransform(card, e);
+            });
+        });
+
+        // 核心函数：统一处理卡牌的 3D 变换和放大逻辑
+        function updateCardTransform(card, e) {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateY = (x - centerX) / 10; 
+            const rotateX = (centerY - y) / 10; 
+
+            // 核心修改：判断当前是否按住了鼠标左键 (e.buttons === 1)
+            // 按住时放大 2.5 倍，仅悬停时放大 1.5 倍
+            const scale = e.buttons === 1 ? 2.5 : 1.5;
+
+            card.style.transform = `scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            card.style.zIndex = 100;
+            card.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.7)';
+        }
+
+        // 核心函数：让卡牌恢复初始状态
+        function resetCard(card) {
+            card.style.transform = ''; // 清除行内样式，恢复默认
+            card.style.zIndex = '';
+            card.style.boxShadow = '';
+        }
+    </script>
+</body>
+</html>
