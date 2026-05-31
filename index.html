@@ -207,7 +207,7 @@
             
             // 判断是否按下：buttons === 1 为鼠标左键按下；触摸时我们手动传了 buttons:1
             const isPressed = e.buttons === 1;
-            const scale = isPressed ? 2.5 : 1.5;
+            const scale = isPressed ? 1.5 : 1.5;
             
             card.style.transform = `scale(${scale}) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             card.style.zIndex = 100;
